@@ -1,67 +1,43 @@
 namespace transformmodule
 {
     using System;
-    using System.IO;
-    using System.Runtime.InteropServices;
     using System.Runtime.Loader;
-    using System.Security.Cryptography.X509Certificates;
     using System.Text;
     using System.Threading;
     using System.Threading.Tasks;
     using Microsoft.Azure.Devices.Client;
     using Microsoft.Azure.Devices.Client.Transport.Mqtt;
     using Newtonsoft.Json;
-    using System.Collections.Generic;
-    using YamlDotNet.Serialization;
     using System.Security.Cryptography;
-    using Microsoft.Azure.Devices.Provisioning.Client;
-    using Microsoft.Azure.Devices.Provisioning.Client.Transport;
-    using Microsoft.Azure.Devices.Shared;
 
     class Telemetry
     {
-        public string deviceID;
+        public string deviceID {get; set;}
+        public float temperature {get; set;}
+        public float pressure {get; set;}
+        public float humidity {get; set;}
+        public string scale {get; set;}
+    }
+
+    class Transformation {
+        public Device device;
+        public Measurements measurements;
+    }
+
+    class Device {
+        public string deviceId;
+    }
+
+    class Measurements {
         public float temperature;
+        public float pressure;
         public float humidity;
-        public string scale;
+        public string scale; 
     }
 
-    class YamlDocument
-    {
-        readonly Dictionary<object, object> root;
-
-        public YamlDocument(string input)
-        {
-            var reader = new StringReader(input);
-            var deserializer = new Deserializer();
-            this.root = (Dictionary<object, object>)deserializer.Deserialize(reader);
-        }
-
-        public object GetKeyValue(string key)
-        {
-            if(this.root.ContainsKey(key))
-            {
-                return this.root[key];
-            }
-
-            foreach(var item in this.root)
-            {
-                var subItem = item.Value as Dictionary<object, object>;
-                if(subItem != null && subItem.ContainsKey(key))
-                {
-                    return subItem[key];
-                }
-            }
-
-            return null;            
-        }
-    }
     class Program
     {
         static int counter;
-        static string globalDpsHostname;
-        static string masterKey;
-        static string scopeId;
 
         static void Main(string[] args)
         {
@@ -100,23 +76,6 @@ namespace transformmodule
 
             // Register callback to be called when a message is received by the module
             await ioTHubModuleClient.SetInputMessageHandlerAsync("input1", PipeMessage, ioTHubModuleClient);
-
-            try {
-                bool appfilexists = File.Exists(@"/app/copiedConfig.yaml");
-                StreamReader sr = new StreamReader(@"/app/copiedConfig.yaml");
-                var yamlString = sr.ReadToEnd();
-
-                var yamlDoc = new YamlDocument(yamlString);
-                scopeId = yamlDoc.GetKeyValue("scope_id").ToString();
-
-                masterKey = yamlDoc.GetKeyValue("masterdpssaskey").ToString();
-                var globalEndPoint = yamlDoc.GetKeyValue("global_endpoint").ToString();
-                globalDpsHostname = new Uri(globalEndPoint).Host;
-            }
-            catch (Exception ex){
-                Console.WriteLine($" encountered exception {ex.Message}");
-                 Console.WriteLine($" encountered innerexception {ex.InnerException}");
-            }
         }
 
         static string ComputeDerivedSymmetricKey(string enrollmentKey, string deviceId)
@@ -152,7 +111,6 @@ namespace transformmodule
 
             if (!string.IsNullOrEmpty(messageString))
             {
-
                 var messageBody = JsonConvert.DeserializeObject<Telemetry>(messageString);
 
                 string devId = "DeviceIdMissing";
@@ -162,88 +120,36 @@ namespace transformmodule
                         devId = message.ConnectionDeviceId;
 
                 // create and populate our new message content
+                Device device = new Device();
+                device.deviceId = message.ConnectionDeviceId;
 
-                Telemetry gatet = new Telemetry();
-                gatet.deviceID = message.ConnectionDeviceId;
-                gatet.humidity = messageBody.humidity;
-                gatet.temperature = messageBody.temperature;
-                gatet.scale = messageBody.scale;
+                Measurements measure = new Measurements();
+                measure.pressure = messageBody.pressure;
+                measure.humidity = messageBody.humidity;
+                measure.temperature = messageBody.scale.ToLower() == "celsius" ? (messageBody.temperature * 9/5) + 32 : messageBody.temperature;
+                measure.scale = messageBody.scale.ToLower() == "celsius" ? "farenheit" : messageBody.scale.ToLower();
 
-                Telemetry hubt = new Telemetry();
-                hubt.deviceID = message.ConnectionDeviceId;
-                hubt.humidity = messageBody.humidity;
-                hubt.temperature = messageBody.scale.ToLower() == "celsius" ? (messageBody.temperature * 9/5) + 32 : messageBody.temperature;
-                hubt.scale = messageBody.scale.ToLower() == "celsius" ? "farenheit" : messageBody.scale.ToLower();
+                Transformation transformation = new Transformation();
+                transformation.device = device;
+                transformation.measurements = measure;
 
-                // serialize to a string
-                string hubMessage = JsonConvert.SerializeObject(hubt);
-                string gatewayMessage = JsonConvert.SerializeObject(gatet);
+                string gatewayMessage = JsonConvert.SerializeObject(transformation);
 
                 // create a new IoT Message object and copy
                 // any properties from the original message
-                var hubPipeMessage = new Message(Encoding.ASCII.GetBytes(hubMessage));
                 var gatewayPipeMessage = new Message(Encoding.ASCII.GetBytes(gatewayMessage));
                 foreach (var prop in message.Properties)
                 {
                     Console.WriteLine($"property key {prop.Key} and value {prop.Value}");
-                    hubPipeMessage.Properties.Add(prop.Key, prop.Value);
                     gatewayPipeMessage.Properties.Add(prop.Key, prop.Value);
                 }
 
                 // send the data to the edge Hub on a named output (for routing)
                 await moduleClient.SendEventAsync("output1", gatewayPipeMessage);
-
-                // send message to hub directly
-                await SendDeviceMessage(hubPipeMessage, message.ConnectionDeviceId);
-                Console.WriteLine($"Converted message sent({counter}): {hubPipeMessage}");
+                Console.WriteLine($"Converted message sent({counter}): {gatewayPipeMessage}");
                 
             }
             return MessageResponse.Completed;
-        }
-
-        static async Task SendDeviceMessage(Message message, string deviceId) 
-        {
-            try
-            {
-                var transformedKey = ComputeDerivedSymmetricKey(masterKey, deviceId);
-                using var security = new SecurityProviderSymmetricKey(
-                    deviceId,
-                    transformedKey,
-                    null);
-
-                using var transport = new ProvisioningTransportHandlerAmqp(TransportFallbackType.TcpOnly);
-
-                ProvisioningDeviceClient provClient = ProvisioningDeviceClient.Create(
-                    globalDpsHostname,
-                    scopeId,
-                    security,
-                    transport);
-
-                Console.WriteLine($"Initialized for registration Id {security.GetRegistrationID()}.");
-
-                Console.WriteLine("Registering with the device provisioning service...");
-                DeviceRegistrationResult result = await provClient.RegisterAsync();
-
-                Console.WriteLine($"Registration status: {result.Status}.");
-                if (result.Status != ProvisioningRegistrationStatusType.Assigned)
-                {
-                    Console.WriteLine($"Registration status did not assign a hub, so exiting this sample.");
-                    return;
-                }
-
-                IAuthenticationMethod auth = new DeviceAuthenticationWithRegistrySymmetricKey(
-                    result.DeviceId,
-                    security.GetPrimaryKey());
-                DeviceClient iotClient = DeviceClient.Create(result.AssignedHub, auth, TransportType.Mqtt_Tcp_Only);
-                await iotClient.OpenAsync();
-                await iotClient.SendEventAsync(message);
-            }
-            catch(Exception ex)
-            {
-                Console.WriteLine($"Encountered exception. message - {ex.Message}.");
-                Console.WriteLine($"Encountered exception. inner exception {ex.InnerException}.");
-                return;
-            }
         }
     }
 }
