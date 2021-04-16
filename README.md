@@ -67,25 +67,25 @@ The previous commands may take several minutes to run.
 This scenario uses an IoT Edge gateway device to transform the data from any downstream devices. This section describes how to create IoT Central device templates for the gateway and downstream devices in your IoT Central application. IoT Edge devices use a deployment manifest to configure their modules.
 
 To create a device template for the downstream device. This scenario uses a simple thermostat device model:
-1.Download the device model for the <a href="https://raw.githubusercontent.com/Azure/iot-plugandplay-models/main/dtmi/com/example/thermostat-2.json" target="_blank">thermostat</a> device to your local machine.
-2.Sign in to your IoT Central application and navigate to the Device templates page.
-3.Select + New, select IoT Device, and select Next: Customize.
-4.Enter Thermostat as the template name and select Next: Review. Then select Create.
-5.Select Import a model and import the thermostat-2.json file you downloaded previously.
-6.Select Publish to publish the new device template.
+1. Download the device model for the <a href="https://raw.githubusercontent.com/Azure/iot-plugandplay-models/main/dtmi/com/example/thermostat-2.json" target="_blank">thermostat</a> device to your local machine.
+2. Sign in to your IoT Central application and navigate to the Device templates page.
+3. Select + New, select IoT Device, and select Next: Customize.
+4. Enter Thermostat as the template name and select Next: Review. Then select Create.
+5. Select Import a model and import the thermostat-2.json file you downloaded previously.
+6. Select Publish to publish the new device template.
 
 To create a device template for the IoT Edge gateway device:
 
-1.Save a copy of the deployment manifest to your local development machine: <a href="https://raw.githubusercontent.com/iot-for-all/iot-central-transform-with-iot-edge/main/edgemodule/moduledeployment.json" target="_blank">moduledeployment.json</a>
-2.Open your local copy of the moduledeployment.json manifest file in a text editor.
-3.Find the registryCredentials section and replace the placeholders with the values you made a note of when you created the Azure container registry. The address value looks like <username>.azurecr.io.
-4.Find the settings section for the transformmodule. Replace <acr or docker repo> with the same address value you used in the previous step. Save the changes.
-5.In your IoT Central application, navigate to the Device templates page.
-6.Select + New, select Azure IoT Edge, and then select Next: Customize.
-7.Enter IoT Edge gateway device as the device template name. Select This is a gateway device. Select Browse to upload the moduledeployment.json deployment manifest file you edited previously.
-8.When the deployment manifest is validated, select Next: Review, then select Create.
-9.Under Model, select Relationships. Select + Add relationship. Enter Downstream device as the display name, and select Thermostat as the target. Select Save.
-10.Select Publish to publish the device template.
+1. Save a copy of the deployment manifest to your local development machine: <a href="https://raw.githubusercontent.com/iot-for-all/iot-central-transform-with-iot-edge/main/edgemodule/moduledeployment.json" target="_blank">moduledeployment.json</a>
+2. Open your local copy of the moduledeployment.json manifest file in a text editor.
+3. Find the registryCredentials section and replace the placeholders with the values you made a note of when you created the Azure container registry. The address value looks like <username>.azurecr.io.
+4. Find the settings section for the transformmodule. Replace <acr or docker repo> with the same address value you used in the previous step. Save the changes.
+5. In your IoT Central application, navigate to the Device templates page.
+6. Select + New, select Azure IoT Edge, and then select Next: Customize.
+7. Enter IoT Edge gateway device as the device template name. Select This is a gateway device. Select Browse to upload the moduledeployment.json deployment manifest file you edited previously.
+8. When the deployment manifest is validated, select Next: Review, then select Create.
+9. Under Model, select Relationships. Select + Add relationship. Enter Downstream device as the display name, and select Thermostat as the target. Select Save.
+10. Select Publish to publish the device template.
 
 You now have two device templates. The IoT Edge gateway device template, and the Thermostat template as the downstream device.
 
