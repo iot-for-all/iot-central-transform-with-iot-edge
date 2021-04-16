@@ -51,8 +51,8 @@ az acr credential show -n $REGISTRY_NAME
 Make a note of the username and password values, you use them later.
 
 To build the custom module in the Azure Cloud Shell:
-1.In the Azure Cloud Shell, navigate to a suitable folder.
-2.To clone the GitHub repository that contains the module source code, run the following command:
+1. In the Azure Cloud Shell, navigate to a suitable folder.
+2. To clone the GitHub repository that contains the module source code, run the following command:
 ```
 cd iot-central-transform-with-iot-edge/custommodule/transformmodule
 az acr build --registry $REGISTRY_NAME --image transformmodule:0.0.1-amd64 -f Dockerfile.amd64 .
