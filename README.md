@@ -118,15 +118,15 @@ Admin Password Or Key	Your choice of password for the AzureUser account on both 
 Select Review + Create, and then Create. It takes a couple of minutes to create the virtual machines in the ingress-scenario resource group.
 
 To check that the IoT Edge device is running correctly:
-1.Open your IoT Central application. Then navigate to the IoT Edge Gateway device on the list of devices on the Devices page.
-2.Select the Modules tab and check the status of the three modules. It takes a few minutes for the IoT Edge runtime to start up in the virtual machine. When it's started, the status of the three modules is Running. If the IoT Edge runtime doesn't start, see Troubleshoot your IoT Edge device.
+1. Open your IoT Central application. Then navigate to the IoT Edge Gateway device on the list of devices on the Devices page.
+2. Select the Modules tab and check the status of the three modules. It takes a few minutes for the IoT Edge runtime to start up in the virtual machine. When it's started, the status of the three modules is Running. If the IoT Edge runtime doesn't start, see Troubleshoot your IoT Edge device.
 
 For your IoT Edge device to function as a gateway, it needs some certificates to prove its identity to any downstream devices. This article uses demo certificates. In a production environment, use certificates from your certificate authority.
 
 To generate the demo certificates and install them on your gateway device:
-1.Use SSH to connect to and sign in on your gateway device virtual machine. You can find the DNS name for this virtual machine in the Azure portal. Navigate to the edgegateway virtual machine in the ingress-scenario resource group.
+1. Use SSH to connect to and sign in on your gateway device virtual machine. You can find the DNS name for this virtual machine in the Azure portal. Navigate to the edgegateway virtual machine in the ingress-scenario resource group.
 _Tip:You may need to open the port 22 for SSH access on both your virtual machines before you can use SSH to connect from your local machine or the Azure Cloud Shell._
-2.Run the following commands to clone the IoT Edge repository and generate your demo certificates:
+2. Run the following commands to clone the IoT Edge repository and generate your demo certificates:
 ```
 # Clone the repo
 cd ~
@@ -145,11 +145,11 @@ After you run the previous commands, the following files are ready to use in the
 ~/certs/certs/azure-iot-test-only.root.ca.cert.pem - The root CA certificate used to make all the other demo certificates for testing an IoT Edge scenario.
 ~/certs/certs/iot-edge-device-mycacert-full-chain.cert.pem - A device CA certificate that's referenced from the config.yaml file. In a gateway scenario, this CA certificate is how the IoT Edge device verifies its identity to downstream devices.
 ~/certs/private/iot-edge-device-mycacert.key.pem - The private key associated with the device CA certificate.
-3.Open the config.yaml file in a text editor. For example:
+3. Open the config.yaml file in a text editor. For example:
 ```
 sudo nano /etc/iotedge/config.yaml
 ```
-4.Locate the Certificate settings settings. Uncomment and modify the certificate settings as follows:
+4. Locate the Certificate settings settings. Uncomment and modify the certificate settings as follows:
 ```
 certificates:
   device_ca_cert: "file:///home/AzureUser/certs/certs/iot-edge-device-ca-mycacert-full-chain.cert.pem"
@@ -157,7 +157,7 @@ certificates:
   trusted_ca_certs: "file:///home/AzureUser/certs/certs/azure-iot-test-only.root.ca.cert.pem"
 ```
 The example shown above assumes you're signed in as AzureUser and created a device CA certificated called "mycacert".
-5.Save the changes and restart the IoT Edge runtime:
+5. Save the changes and restart the IoT Edge runtime:
 ```
 sudo systemctl restart iotedge
 ```
@@ -166,14 +166,14 @@ If the runtime doesn't start, check the changes you made in config.yaml and see 
 
 ## Connect downstream device to IoT Edge device
 To connect a downstream device to the IoT Edge gateway device:
-1.Use SSH to connect to and sign in on your downstream device virtual machine. You can find the DNS name for this virtual machine in the Azure portal. Navigate to the leafdevice virtual machine in the ingress-scenario resource group.
+1. Use SSH to connect to and sign in on your downstream device virtual machine. You can find the DNS name for this virtual machine in the Azure portal. Navigate to the leafdevice virtual machine in the ingress-scenario resource group.
 _Tip:You may need to open the port 22 for SSH access on both your virtual machines before you can use SSH to connect from your local machine or the Azure Cloud Shell._
-2.To clone the GitHub repository with the source code for the sample downstream device, run the following command:
+2. To clone the GitHub repository with the source code for the sample downstream device, run the following command:
 ```
 cd ~
 git clone https://github.com/iot-for-all/iot-central-transform-with-iot-edge
 ```
-3.To copy the required certificate from the gateway device, run the following scp commands. This scp command uses the hostname edgegateway to identify the gateway virtual machine. You'll be prompted for your password:
+3. To copy the required certificate from the gateway device, run the following scp commands. This scp command uses the hostname edgegateway to identify the gateway virtual machine. You'll be prompted for your password:
 ```
 cd ~/iot-central-transform-with-iot-edge
 scp AzureUser@edgegateway:/home/AzureUser/certs/certs/azure-iot-test-only.root.ca.cert.pem leafdevice/certs
