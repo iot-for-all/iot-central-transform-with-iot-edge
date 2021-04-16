@@ -31,16 +31,15 @@ You want to use an IoT Edge module to transform the data to the following JSON f
 ```
 The following steps show you how to set up and configure this scenario:
 
+## Build the custom module.
 
 In this example, the IoT Edge device runs a custom module that transforms the data from the downstream device. Before you deploy and configure the IoT Edge device, you need to:
-
-## Build the custom module.
+Build the custom module
 Add the custom module to a container registry.
 
 The IoT Edge runtime downloads custom modules from a container registry such as an Azure container registry or Docker Hub. The Azure Cloud Shell has all the tools you need to create a container registry, build the module, and upload the module to the registry:
 
 To create a container registry:
-
 1. Open the <a href="https://shell.azure.com/" target="_blank">Azure Cloud Shell</a> and sign in to your Azure subscription.
 2. Run the following commands to create an Azure container registry:
 ```
