@@ -45,6 +45,6 @@ You want to use an IoT Edge module to transform the data to the following JSON f
 }
 ```
 
-## Set up and configure the sample
+## Instructions to set up and configure the sample
 
 For detailed instructions on how to set up and configure the sample, see [Transform data for IoT Central > Data transformation at ingress](https://docs.microsoft.com/azure/iot-central/core/howto-transform-data#data-transformation-at-ingress)
