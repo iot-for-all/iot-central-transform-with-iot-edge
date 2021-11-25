@@ -1,15 +1,3 @@
----
-page_type: sample
-description: "A sample to show how to use IoT Edge to transform data on ingress to IoT Central."
-languages:
-- csharp
-- typescript
-products:
-- azure-iot-central
-- azure-iot-edge
-urlFragment: azure-iot-central-transform-with-iot-edge
----
-
 # Use IoT Edge to transform data for IoT Central
 
 Downstream IoT devices connected to an IoT Edge device send data in various formats. To use the downstream device data in your IoT Central application, you may need to transform the data to make the format compatible with your IoT Central application.This sample shows you how to use an IoT Edge module to perform a simple transformation of downstream device data format from CSV to JSON in the IoT Edge device and forward the transformed data to IoT Central. At a high level, the steps to configure this scenario are:
